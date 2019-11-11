@@ -20,6 +20,7 @@ RANDOM_SEED = 42
 colnames = ['Users','Activity','Timestamp','x-axis','y-axis','z-axis']
 dataset = pd.read_csv('C:/Users/girishp/ML project/data/WISDM_ar_v1.1_raw.txt', names=colnames)
 dataset = dataset.dropna()
+#直接删除含有缺失值的记录（数据很大时不影响）
 
 # print(dataset.head())
 # dataset.info()
@@ -67,17 +68,27 @@ for i in range(0, len(dataset) - N_TIME_STEPS, step):
     ys = dataset['y-axis'].values[i: i + N_TIME_STEPS]
     zs = dataset['z-axis'].values[i: i + N_TIME_STEPS]
     label = stats.mode(dataset['Activity'][i: i + N_TIME_STEPS])[0][0]
+    #用scipy.stats.mode函数寻找数组或者矩阵每行/每列中最常出现成员以及出现的次数
     segments.append([xs,ys,zs])
     labels.append(label)
+    #append() 方法用于在列表末尾添加新的对象 这里应该就是填充segments和labels
 
 print("reduced size of data", np.array(segments).shape)
 
 reshaped_segments = np.asarray(segments,dtype=np.float32).reshape(-1, N_TIME_STEPS, N_FEATURES)
+#reshape在不改变矩阵的数值的前提下修改矩阵的形状,这里应该是升成三维
+#keras LSTM模型对数据形式有一定要求 通常为3D tensor 类比于tensorflow？
 labels = np.asarray(pd.get_dummies(labels),dtype=np.float32)
+#get_dummies 是利用pandas实现one hot encode的方式
 
 print("Reshape the segments", np.array(reshaped_segments).shape)
 
 X_train, X_test, y_train, y_test = train_test_split(reshaped_segments, labels, test_size=0.2, random_state=RANDOM_SEED)
+#使用train_test_split函数可以将原始数据集按照一定比例划分训练集和测试集对模型进行训练 
+#x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1) 
+#x，y是原始的数据集 
+#test_size=0.2 测试集的划分比例
+#random_state=1 随机种子，如果随机种子一样，则随机生成的数据集是相同的
 
 # BUILDING THE MODEL
 
