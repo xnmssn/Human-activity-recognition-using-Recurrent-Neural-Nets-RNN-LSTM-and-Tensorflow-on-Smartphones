@@ -77,9 +77,12 @@ print("reduced size of data", np.array(segments).shape)
 
 reshaped_segments = np.asarray(segments,dtype=np.float32).reshape(-1, N_TIME_STEPS, N_FEATURES)
 #reshape在不改变矩阵的数值的前提下修改矩阵的形状,这里应该是升成三维
+#-1 表示不知道该填什么数字合适的情况下，可以选择，由python其他值推测出来
 #keras LSTM模型对数据形式有一定要求 通常为3D tensor 类比于tensorflow？
 labels = np.asarray(pd.get_dummies(labels),dtype=np.float32)
 #get_dummies 是利用pandas实现one hot encode的方式
+#独热编码，又称一位有效编码，其方法是使用N位状态寄存器来对N个状态进行编码，每个状态都有它独立的寄存器位，并且在任意时候，其中只有一位有效。
+#（特征数字化）
 
 print("Reshape the segments", np.array(reshaped_segments).shape)
 
@@ -107,6 +110,7 @@ def create_LSTM_model(inputs):
 
     X = tf.transpose(inputs, [1,0,2])
     X = tf.reshape(X, [-1, N_FEATURES])
+    #函数的作用是将tensor变换为参数shape形式tf.reshape(tensor,shape,name=None)
 
     hidden =tf.nn.relu(tf.matmul(X, W['hidden']) + biases['hidden'])
     hidden =tf.split(hidden, N_TIME_STEPS, 0)
