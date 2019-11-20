@@ -79,7 +79,7 @@ reshaped_segments = np.asarray(segments,dtype=np.float32).reshape(-1, N_TIME_STE
 #reshape在不改变矩阵的数值的前提下修改矩阵的形状,这里应该是升成三维
 #-1 表示不知道该填什么数字合适的情况下，可以选择，由python其他值推测出来
 #keras LSTM模型对数据形式有一定要求 通常为3D tensor 类比于tensorflow？
-labels = np.asarray(pd.get_dummies(labels),dtype=np.float32)
+labels = np.asarray(pd.get_dummies(labels),dtype=np.float32)#没有索引
 #get_dummies 是利用pandas实现one hot encode的方式
 #独热编码，又称一位有效编码，其方法是使用N位状态寄存器来对N个状态进行编码，每个状态都有它独立的寄存器位，并且在任意时候，其中只有一位有效。
 #（特征数字化）
@@ -176,6 +176,16 @@ for i in range(1, N_EPOCHS + 1):
         X: X_train, Y:y_train})
     _, acc_test, loss_test = sess.run([pred_softmax, accuracy, loss], feed_dict={
         X: X_test, Y:y_test})
+    
+#迭代训练
+#for i in range(1, training_steps+1):
+#for (x, y) in zip(trX, trY):
+#sess.run(train_op, feed_dict={X:x, Y:y})
+     #占位符使用 feed_dict 填充到字典中
+     #feed_dict是一个字典，在字典中需要给出每一个用到的占位符的取值。
+    
+    #zip([seql, …])接受一系列可迭代对象作为参数，将对象中对应的元素打包成一个个tuple（元组），然后返回由这些tuples组成的list（列表）。
+    #若传入参数的长度不等，则返回list的长度和参数中长度最短的对象相同。
 
     history['train_loss'].append(loss_train)
     history['train_acc'].append(acc_train)
