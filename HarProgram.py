@@ -59,11 +59,14 @@ dataset = dataset.dropna()
 # Data preprocessing
 
 N_TIME_STEPS = 200
+#time_step变量，是用于设置以多少历史数据作为预测下一个数据的基础（就是说要指定多长的序列能够构成一个上下文相关的序列。）
 N_FEATURES = 3
 step = 20
+#不懂 为什么i要以20为步长？？？
 segments = []
 labels = []
 for i in range(0, len(dataset) - N_TIME_STEPS, step):
+    #step:步长
     xs = dataset['x-axis'].values[i: i + N_TIME_STEPS]
     ys = dataset['y-axis'].values[i: i + N_TIME_STEPS]
     zs = dataset['z-axis'].values[i: i + N_TIME_STEPS]
@@ -79,7 +82,7 @@ reshaped_segments = np.asarray(segments,dtype=np.float32).reshape(-1, N_TIME_STE
 #reshape在不改变矩阵的数值的前提下修改矩阵的形状,这里应该是升成三维
 #-1 表示不知道该填什么数字合适的情况下，可以选择，由python其他值推测出来
 #keras LSTM模型对数据形式有一定要求 通常为3D tensor 类比于tensorflow？
-labels = np.asarray(pd.get_dummies(labels),dtype=np.float32)#没有索引
+labels = np.asarray(pd.get_dummies(labels),dtype=np.float32)#没有索引?
 #get_dummies 是利用pandas实现one hot encode的方式
 #独热编码，又称一位有效编码，其方法是使用N位状态寄存器来对N个状态进行编码，每个状态都有它独立的寄存器位，并且在任意时候，其中只有一位有效。
 #（特征数字化）
@@ -96,7 +99,9 @@ X_train, X_test, y_train, y_test = train_test_split(reshaped_segments, labels, t
 # BUILDING THE MODEL
 
 N_CLASSES = 6
+# 输出节点数（分类数目）
 N_HIDDEN_UNITS = 64
+#实际上指代的就是第一层隐藏层的输出神经元个数，即第二层隐藏层输入神经元的个数。
 
 def create_LSTM_model(inputs):
     W = {
@@ -127,9 +132,9 @@ def create_LSTM_model(inputs):
 
 tf.reset_default_graph()
 
-X = tf.placeholder(tf.float32, [None, N_TIME_STEPS, N_FEATURES], name="input")
-Y = tf.placeholder(tf.float32, [None, N_CLASSES])
-
+X = tf.placeholder(tf.float32, [None, N_TIME_STEPS, N_FEATURES], name="input")  #输入
+Y = tf.placeholder(tf.float32, [None, N_CLASSES])                               #输出
+#定义输入输出的 placeholder
 
 pred_Y = create_LSTM_model(X)
 pred_softmax = tf.nn.softmax(pred_Y, name="y_")
@@ -141,6 +146,11 @@ L2 = L2_LOSS * \
     sum(tf.nn.l2_loss(tf_var) for tf_var in tf.trainable_variables())
 
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_Y, labels= Y)) + L2
+#tf.reduce_mean()在tensor的某一维度上求平均值的函数
+#tf.nn.softmax_cross_entropy_with_logits(logits, labels, name=None)
+#第一个参数logits：神经网络最后一层的输出
+#第二个参数labels：实际的标签
+
 
 #Defining the optimizer for the model
 
@@ -151,6 +161,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE).minimize(loss)
 correct_pred = tf.equal(tf.argmax(pred_softmax, 1), tf.argmax(Y, 1))
 
 accuracy = tf.reduce_mean(tf.cast(correct_pred, dtype=tf.float32))
+#cast(x, dtype, name=None)执行 tensorflow 中张量数据类型转换
 
 #Training the model
 
